@@ -5,11 +5,9 @@ int main(void)
     const int screenWidth = 360;
     const int screenHeight = 800;
     float percentage = screenWidth/2;
-    Rectangle clickerposition = {percentage, 400};
     Vector2 circlepos = {percentage, 400};
-    Rectangle mouse = {percentage, 400, 30, 30};
+    Rectangle mouse = {percentage, 400, 1, 1};
     int clicks = 0;
-    bool collision = false;
     int multiplier = 1;
     int cost = 100;
 
@@ -31,10 +29,12 @@ int main(void)
 
             DrawRectangle(butxpos, butypos, 50, 50, RED);
 
-            mouse.x = GetMouseX() - mouse.width/2;
-            mouse.y = GetMouseY() - mouse.height/2;
+            mouse.x = GetMouseX();
+            mouse.y = GetMouseY();
 
-            if (collision = CheckCollisionRecs(clickerposition, mouse))
+            Vector2 point_mouse = {mouse.x, mouse.y};
+
+            if (CheckCollisionPointCircle(point_mouse, circlepos, 31.4))
             {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
@@ -42,9 +42,9 @@ int main(void)
                 };
             };
 
-            if (collision = CheckCollisionRecs(button, mouse))
+            if (CheckCollisionRecs(button, mouse))
             {
-                if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 {
                     if (clicks >= cost)
                     {
@@ -60,11 +60,11 @@ int main(void)
                 }
             }
 
-            DrawText(TextFormat("%i", clicks), percentage, 20, 40, LIGHTGRAY);
+            DrawText(TextFormat("%01i clicks", clicks), percentage, 20, 40, LIGHTGRAY);
 
-            DrawText(TextFormat("%i", multiplier), percentage, 70, 40, LIGHTGRAY);
+            DrawText(TextFormat("%01i x", multiplier), percentage, 70, 40, LIGHTGRAY);
 
-            DrawText(TextFormat("%i", cost), butxpos, butypos + 50, 20, GREEN);
+            DrawText(TextFormat("%01i $", cost), butxpos, butypos + 50, 20, GREEN);
 
         EndDrawing();
     }
