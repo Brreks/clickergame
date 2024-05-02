@@ -1,22 +1,7 @@
 #include "raylib.h"
 #include <math.h>
 
-typedef enum screen {title, mini, shop, winner} screen;
-
-#define max_shots 10
-
-typedef struct Bullet {
-    Vector2 pos;
-    Vector2 vel;
-    float rad;
-    float rotation;
-    int life;
-    bool active;
-    Color color;
-} Bullet;
-
-static Bullet bullet[max_shots] = {0};
-
+typedef enum screen {title, mini, aftermini, shop, winner} screen;
 
 int main(void)
 {
@@ -24,14 +9,9 @@ int main(void)
     const int screenHeight = 800;
     float percentage = screenWidth/2.0f;
     int health = 100, dmg = 5, money = 0, multiplier = 1, cost = 100, passive = 0;
-    float minitime = 0;
+    float minitime = 0, intimer = 0;
 
     Vector2 circlepos = {percentage, 350};
-    float circlerad = 31.4;
-
-    float shootrad = 7.6;
-    float angle = 0.0f;
-    float delx = 0.0f, dely = 0.0f, del2x = 0.0f, del2y = 0.0f;
 
     const int butw = 50, buth = 50;
 
@@ -40,8 +20,8 @@ int main(void)
 
     const int butxpos = 50, butypos = 650, but2xpos = 150, but2ypos = 650, but3xpos = 250, but3ypos = 650;
     Rectangle button = {butxpos, butypos, butw, buth};
-    Rectangle button2 = {but2xpos, but2ypos, butw, buth};
-    Rectangle button3 = {but3xpos, but3ypos, butw, buth};
+    Rectangle minibut = {but2xpos, but2ypos, butw, buth};
+    Rectangle shpbut = {but3xpos, but3ypos, butw, buth};
 
     Rectangle taskbar = {0, 600, 360, 200};
 
@@ -54,9 +34,14 @@ int main(void)
     const int winx = 30, winy = 460, wincost = 1000000;
     Rectangle win = {winx, winy, butw, buth};
 
+    const int clkx = percentage, clky = 400, clkrad = 25;
+    Vector2 clkr = {(float)clkx, clky};
+    int nmbclkr = 0, moneymini = 0;
+
     InitWindow(screenWidth, screenHeight, "Clicker");
 
     screen current = title;
+    screen lastused = title;
 
     SetTargetFPS(60);
 
@@ -71,12 +56,20 @@ int main(void)
         {
             money += passive;
             mpstime = 0;
-        }
+        }  
 
         switch(current)
         {
             case title:
             {
+                if (intimer < 15)
+                {
+                    if (current == title || current == shop)
+                    {
+                        intimer += deltatime;
+                    }
+                } 
+
                 if (CheckCollisionPointCircle(point_mouse, circlepos, 31.4))
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -104,20 +97,31 @@ int main(void)
                     }
                 }
 
-                if (CheckCollisionPointRec(point_mouse, button2))
+                if (CheckCollisionPointRec(point_mouse, minibut))
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        current = mini;
+                        if (intimer >= 15)
+                        {
+                            current = mini;
+                            intimer = 0;
+                        }
                     }
                 }
 
-                if (CheckCollisionPointRec(point_mouse, button3))
+                if (CheckCollisionPointRec(point_mouse, shpbut))
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
                         current = shop;
                     }
+                }
+
+                if (lastused == aftermini)
+                {
+                    lastused = title;
+                    nmbclkr = 0;
+                    minitime = 0;
                 }
             } break;
 
@@ -127,79 +131,35 @@ int main(void)
 
                 if (minitime >= 30)
                 {
-                    current = title;
+                    current = aftermini;
                 }
 
                 if (IsKeyPressed(KEY_P))
                 {
-                    current = title;
+                    current = aftermini;
                 }
 
-                if (!CheckCollisionPointCircle(point_mouse, circlepos, circlerad - shootrad && circlerad == shootrad))
+                if (CheckCollisionPointCircle(point_mouse, clkr, clkrad))
                 {
-                    delx = point_mouse.x - circlepos.x;
-                    dely = point_mouse.y - circlepos.y;
-
-                    angle = atan2f(dely,delx);
-
-                    del2x = (circlerad - shootrad)*cosf(angle);
-                    del2y = (circlerad - shootrad)*sinf(angle);
-
-                    point_mouse.x = circlepos.x + del2x;
-                    point_mouse.y = circlepos.y + del2y;
-                };
-
-                for (int i = 0; i < max_shots; i++)
-                {
-                    bullet[i].pos = {0,0};
-                    bullet[i].vel = {0,0};
-                    bullet[i].rad = 2;
-                    bullet[i].active = false;
-                    bullet[i].life = 0;
-                    bullet[i].color = PURPLE;
-                }
-
-                if (IsKeyPressed(KEY_SPACE))
-                {
-                for (int i = 0; i < max_shots; i++)
-                    {   
-                        if (!bullet[i].active)
-                        {
-                        bullet[i].pos = {point_mouse.x, point_mouse.y};
-                        bullet[i].active = true;
-                        bullet[i].vel.x = 1;
-                        bullet[i].vel.y = 1;
-                        bullet[i].rotation = angle;
-                        break;
-                        }
-                    }
-                }
-
-                for (int i = 0; i < max_shots; i++)
-                {
-                    if (bullet[i].active)
+                    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        bullet[i].life++;
+                        clkr.x = GetRandomValue(clkrad, screenWidth-clkrad);
+                        clkr.y = GetRandomValue(clkrad, 800-clkrad);
+                        moneymini += 10 * multiplier;
+                        nmbclkr += 1;
+                        money += moneymini;
                     }
-                }
-
-                for (int i = 0; i < max_shots; i++)
-                {
-                    if(bullet[i].active)
-                    {
-                        bullet[i].pos.x += bullet[i].vel.x;
-                        bullet[i].pos.y -= bullet[i].vel.y;
-
-                        if (bullet[i].life >= 800)
-                        {
-                            bullet[i].pos = {0,0};
-                            bullet[i].vel = {0,0};
-                            bullet[i].life = 0;
-                            bullet[i].active = false;
-                        }
-                    }
-                }
+                } 
+                
             } break;
+
+            case aftermini:
+            {
+                lastused = mini;
+                WaitTime(2);
+                current = title;
+                lastused = aftermini;
+            }
 
             case shop:
             {
@@ -219,6 +179,7 @@ int main(void)
                         {
                             passive += 1;
                             money = money - cost;
+                            multiplier++;
                             cost = cost * multiplier;
                         }
                     }
@@ -228,10 +189,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*4)
+                        if (money >= cost*1.33)
                         {
                             passive += 10;
-                            money = money - cost*4;
+                            money = money - cost*1.33;
+                            multiplier++;
                             cost = cost * multiplier;
                         }
                     }
@@ -241,10 +203,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*16)
+                        if (money >= cost*1.76)
                         {
                             passive += 100;
-                            money = money - cost*16;
+                            money = money - cost*1.76;
+                            multiplier++;
                             cost = cost * multiplier;
                         }
                     }
@@ -254,10 +217,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*64)
+                        if (money >= cost*2.33)
                         {
                             passive += 1000;
-                            money = money - cost*64;
+                            money = money - cost*2.33;
+                            multiplier++;
                             cost = cost * multiplier;
                         }
                     }
@@ -273,6 +237,11 @@ int main(void)
                         }
                     }
                 }
+            } break;
+
+            case winner:
+            {
+                lastused = winner;
             }
         }
 
@@ -290,9 +259,9 @@ int main(void)
 
                 DrawRectangleRec(button, RED);
 
-                DrawRectangleRec(button2, RED);
+                DrawRectangleRec(minibut, RED);
 
-                DrawRectangleRec(button3, RED);
+                DrawRectangleRec(shpbut, RED);
 
                 DrawText(TextFormat("dmg = %01i", dmg*multiplier), taskbar.x, taskbar.y - 20, 20, GREEN);
 
@@ -310,24 +279,36 @@ int main(void)
 
                 DrawText("Shop", but3xpos, but3ypos + 50, 20, GREEN);
 
+                if (intimer < 15)
+                {
+                    DrawText(TextFormat("%02.2f / 15.00", intimer), 125, 630, 20, LIGHTGRAY);
+                }
+
+                else 
+                {
+                    DrawText("PLAY", 150, 630, 20, GREEN);
+                }
+
             } break;
 
             case mini:
             {
-
-                DrawCircleV(circlepos, 31.4, BLUE);
-
-                DrawCircleV(point_mouse, shootrad, RED);
+                DrawCircleV(clkr, clkrad, BLUE);
 
                 DrawText(TextFormat("%02.2f", minitime), percentage - 45, 20, 40, RED);
 
-                for (int i = 0; i < max_shots; i++)
-                {
-                    if (bullet[i].active)
-                    {
-                        DrawCircleV(bullet[i].pos, bullet[i].rad, PURPLE);
-                    }
-                }
+                DrawText(TextFormat("%01i clicked", nmbclkr), percentage - 45, 60, 40, LIGHTGRAY);
+
+            } break;
+
+            case aftermini:
+            {
+                ClearBackground(BLACK);
+
+                DrawText(TextFormat("%01i * 50 $", nmbclkr), percentage - 75, 300, 40, RED);
+
+                DrawText(TextFormat("%01i $", moneymini), percentage - 75, 340, 40, RED);
+
             } break;
 
             case shop:
@@ -367,6 +348,7 @@ int main(void)
                 DrawRectangleRec(button, RED);
 
                 DrawText("Back", butxpos, butypos + 50, 20, GREEN);
+
             } break;
 
             case winner:
@@ -376,6 +358,8 @@ int main(void)
                 DrawText("YOU HAVE WON", percentage - 150, 300, 40, RED);
 
                 DrawText("THE GAME", percentage - 150, 340, 40, RED);
+
+                DrawText("Press ESC to quit the game", percentage - 150, 400, 20, RED);
             }
         }   
 
