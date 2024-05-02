@@ -8,7 +8,7 @@ int main(void)
     const int screenWidth = 360;
     const int screenHeight = 800;
     float percentage = screenWidth/2.0f;
-    int health = 100, dmg = 5, money = 0, multiplier = 1, cost = 100, passive = 0;
+    int health = 100, dmg = 5, money = 0, multiplier = 1, passive = 0;
     float minitime = 0, intimer = 0;
 
     Vector2 circlepos = {percentage, 350};
@@ -47,6 +47,8 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        int cost = 100 * multiplier, cost2 = cost*3.33, cost3 = cost2*3.33, cost4 = cost3 * 3.33, numbmulti = 10 * multiplier;
+        
         Vector2 point_mouse = GetMousePosition();
 
         deltatime = GetFrameTime();
@@ -92,7 +94,6 @@ int main(void)
                         {
                             money = money - cost;
                             multiplier ++;
-                            cost = cost * multiplier;
                         }
                     }
                 }
@@ -145,9 +146,9 @@ int main(void)
                     {
                         clkr.x = GetRandomValue(clkrad, screenWidth-clkrad);
                         clkr.y = GetRandomValue(clkrad, 800-clkrad);
-                        moneymini += 10 * multiplier;
                         nmbclkr += 1;
-                        money += moneymini;
+                        moneymini += 10 * multiplier;
+                        money += 10 * multiplier;
                     }
                 } 
                 
@@ -180,7 +181,6 @@ int main(void)
                             passive += 1;
                             money = money - cost;
                             multiplier++;
-                            cost = cost * multiplier;
                         }
                     }
                 }
@@ -189,12 +189,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*1.33)
+                        if (money >= cost2)
                         {
                             passive += 10;
-                            money = money - cost*1.33;
+                            money = money - cost2;
                             multiplier++;
-                            cost = cost * multiplier;
                         }
                     }
                 }
@@ -203,12 +202,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*1.76)
+                        if (money >= cost3)
                         {
                             passive += 100;
-                            money = money - cost*1.76;
+                            money = money - cost3;
                             multiplier++;
-                            cost = cost * multiplier;
                         }
                     }
                 }
@@ -217,12 +215,11 @@ int main(void)
                 {
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                     {
-                        if (money >= cost*2.33)
+                        if (money >= cost4)
                         {
                             passive += 1000;
-                            money = money - cost*2.33;
+                            money = money - cost4;
                             multiplier++;
-                            cost = cost * multiplier;
                         }
                     }
                 }
@@ -295,9 +292,9 @@ int main(void)
             {
                 DrawCircleV(clkr, clkrad, BLUE);
 
-                DrawText(TextFormat("%02.2f", minitime), percentage - 45, 20, 40, RED);
+                DrawText(TextFormat("%02.2f / 30.00", minitime), percentage - 100, 20, 40, RED);
 
-                DrawText(TextFormat("%01i clicked", nmbclkr), percentage - 45, 60, 40, LIGHTGRAY);
+                DrawText(TextFormat("%01i clicked", nmbclkr), percentage - 90, 60, 40, LIGHTGRAY);
 
             } break;
 
@@ -305,7 +302,7 @@ int main(void)
             {
                 ClearBackground(BLACK);
 
-                DrawText(TextFormat("%01i * 50 $", nmbclkr), percentage - 75, 300, 40, RED);
+                DrawText(TextFormat("%01i * %01i $", nmbclkr, numbmulti), percentage - 75, 300, 40, RED);
 
                 DrawText(TextFormat("%01i $", moneymini), percentage - 75, 340, 40, RED);
 
@@ -315,6 +312,8 @@ int main(void)
             {
                 DrawRectangleRec(taskbar, BLUE);
 
+                DrawText(TextFormat("%01i $", money), percentage - 45, 20, 40, LIGHTGRAY);
+
                 DrawRectangleRec(shop1, RED);
 
                 DrawText(TextFormat("%01i $", cost), shopx, shopy + 50, 20, GREEN);
@@ -323,19 +322,19 @@ int main(void)
 
                 DrawRectangleRec(shop2, RED);
                 
-                DrawText(TextFormat("%01i $", cost*4), shop2x, shop2y + 50, 20, GREEN);
+                DrawText(TextFormat("%01i $", cost2), shop2x, shop2y + 50, 20, GREEN);
 
                 DrawText("Adds 10 mps", shop2x + 70, shop2y + 20, 20, GREEN);
 
                 DrawRectangleRec(shop3, RED);
 
-                DrawText(TextFormat("%01i $", cost*16), shop3x, shop3y + 50, 20, GREEN);
+                DrawText(TextFormat("%01i $", cost3), shop3x, shop3y + 50, 20, GREEN);
 
                 DrawText("Adds 100 mps", shop3x + 70, shop3y + 20, 20, GREEN);
 
                 DrawRectangleRec(shop4, RED);
 
-                DrawText(TextFormat("%01i $", cost*64), shop4x, shop4y + 50, 20, GREEN);
+                DrawText(TextFormat("%01i $", cost4), shop4x, shop4y + 50, 20, GREEN);
 
                 DrawText("Adds 1000 mps", shop4x + 70, shop4y + 20, 20, GREEN);
 
